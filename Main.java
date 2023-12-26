@@ -213,19 +213,88 @@ class BFS {
         }
     }
 }
-// Driver Code
+
+class DFS {
+    Graph graph;
+
+    public DFS(Graph x) {
+        this.graph = x;
+    }
+
+    public PathInfo shortestPath(String source, String dest) {
+        Map<String, String> parentMap = new HashMap<>();
+        Map<String, Integer> distanceMap = new HashMap<>();
+        Stack<String> stack = new Stack<>();
+
+        stack.push(source);
+        parentMap.put(source, null);
+        distanceMap.put(source, 0);
+
+        while (!stack.isEmpty()) {
+            String current = stack.pop();
+
+            if (current.equals(dest)) {
+                return reconstructPathAndDistance(parentMap, distanceMap, source, dest);
+            }
+
+            for (Pair neighbor : graph.map.get(current)) {
+                String neighborCity = neighbor.city;
+                int distanceToNeighbor = neighbor.distance;
+
+                if (!parentMap.containsKey(neighborCity)) {
+                    stack.push(neighborCity);
+                    parentMap.put(neighborCity, current);
+                    distanceMap.put(neighborCity, distanceMap.get(current) + distanceToNeighbor);
+                }
+            }
+        }
+
+        return null; // No path exists
+    }
+
+    private PathInfo reconstructPathAndDistance(Map<String, String> parentMap, Map<String, Integer> distanceMap, String source, String dest) {
+        List<String> path = new ArrayList<>();
+        int totalDistance = distanceMap.get(dest);
+        String current = dest;
+
+        while (current != null) {
+            path.add(0, current);
+            current = parentMap.get(current);
+        }
+
+        return new PathInfo(path, totalDistance);
+    }
+
+    public static class PathInfo {
+        List<String> path;
+        int totalDistance;
+
+        public PathInfo(List<String> path, int totalDistance) {
+            this.path = path;
+            this.totalDistance = totalDistance;
+        }
+
+        public List<String> getPath() {
+            return path;
+        }
+
+        public int getTotalDistance() {
+            return totalDistance;
+        }
+    }
+}
+
 public class Main {
  
     public static void main(String args[]) throws IOException
     {
-        Graph cityMap = new Graph("sa.csv");
+        Graph cityMap = new Graph("Java\\DataStructuresProject\\data.csv");
 
         // Printing the graph
         System.out.println("Graph:\n"+ cityMap.toString());
 
         BFS search = new BFS(cityMap);
-
-        BFS.PathInfo shortestPathInfo = search.shortestPath("Batman", "Izmir");
+        BFS.PathInfo shortestPathInfo = search.shortestPath("Bursa", "Diyarbakir");
 
         if (shortestPathInfo != null) {
             System.out.println("Shortest path: " + shortestPathInfo.getPath());
@@ -233,7 +302,18 @@ public class Main {
         } else {
             System.out.println("No path found between the cities.");
         }
+        
+        System.out.println();
 
+        DFS dfsSearch = new DFS(cityMap);
+        DFS.PathInfo dfsShortestPath = dfsSearch.shortestPath("Bursa", "Diyarbakir");
+
+        if (dfsShortestPath != null) {
+            System.out.println("\nShortest path using DFS: " + dfsShortestPath.getPath());
+            System.out.println("Total distance using DFS: " + dfsShortestPath.getTotalDistance() + " km");
+        } else {
+            System.out.println("\nNo path found between the cities using DFS.");
+        }
     
 }
 }
